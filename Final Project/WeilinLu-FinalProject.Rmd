@@ -1,0 +1,202 @@
+---
+title: "Avengers"
+author: "Weilin Lu"
+output:
+  html_document:
+    fig_width: 8
+    code_folding: hide
+    highlight: tango
+    toc: true
+    toc_float:
+      collapsed: true
+---
+
+
+```{r setup2, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	fig.height = 4,
+	fig.width = 8,
+	message = FALSE,
+	warning = FALSE
+)
+```
+# Introduction
+The "Avengers" dataset is a collection of data on characters from the Marvel comic book series "The Avengers". This dataset contains information such as the gender, age, and number of appearances of each character, as well as other details such as their alignment (i.e. hero or villain), their status as an Avenger or not, and the issue number of their first appearance.
+
+In this project, I will explore different statistical techniques for analyzing the "Avengers" dataset. Specifically, I will examine the distribution of a numerical variable, demonstrate the applicability of the Central Limit Theorem using random samples, and investigate various sampling methods that can be used on the dataset. I will also draw conclusions about the strengths and limitations of different sampling methods, and discuss the implications of these results for future analyses of the "Avengers" dataset.
+# REQUIRE LIBRARY
+```{r setup, include=FALSE}
+library(readr)
+library(ggplot2)
+library(sampling)
+library(dplyr)
+library(tidyverse)
+library(plotly)
+```
+
+# Read the csv file 
+The data is getting from following url :https://raw.githubusercontent.com/fivethirtyeight/data/master/avengers/avengers.csv
+```{r echo=TRUE}
+avengers <- read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/avengers/avengers.csv")
+
+```
+# Analysis of Categorical and Numerical Variables
+
+For this analysis, I will look at the distribution of the Gender variable, which is categorical, and the Appearances variable, which is numerical. I will create a bar chart to visualize the distribution of Gender, and a histogram to visualize the distribution of Appearances.
+```{r echo=TRUE}
+library(ggplot2)
+
+# Bar chart of Gender distribution
+ggplot(avengers, aes(x = Gender)) +
+  geom_bar(fill = "steelblue") +
+  labs(title = "Gender Distribution of Avengers", x = "Gender", y = "Count")
+
+# Histogram of Appearances distribution
+ggplot(avengers, aes(x = Appearances)) +
+  geom_histogram(fill = "steelblue", binwidth = 100) +
+  labs(title = "Distribution of Appearances", x = "Appearances", y = "Count")
+
+
+```
+The bar chart shows that there are more male Avengers than female, with a ratio of about 4:1. The histogram shows that the distribution of Appearances is skewed to the right, with a long tail indicating that there are a few Avengers who have appeared in a very large number of issues.
+# Analysis of Two Variables
+For this analysis, I will look at the relationship between the Year and Appearances variables.I will create a scatter plot to visualize this relationship.
+```{r echo = TRUE}
+# Scatter plot of Year and Appearances
+ggplot(avengers, aes(x = Year, y = Appearances)) +
+  geom_point(color = "steelblue") +
+  labs(title = "Relationship Between Year and Appearances", x = "Year", y = "Appearances")
+
+```
+The scatter plot shows that there is a positive relationship between Year and Appearances, with a few outliers who have appeared in a very large number of issues. This suggests that as time goes on, Avengers tend to appear in more issues. However, I should note that this relationship may be confounded by other factors, such as changes in the comic book industry or the popularity of the Avengers franchise.
+
+# One variable with numerical data and examine the distribution of the data.  
+In this part, I want to choose the "Appearances" variable, which represents the number of comic book issues in which the character appeared. I can visualize the distribution using a histogram.
+```{r echo = TRUE}
+ggplot(avengers, aes(x=Appearances)) +
+  geom_histogram(binwidth=100) +
+  xlab("Number of Appearances") +
+  ylab("Count")
+```
+I can see that the distribution is heavily skewed to the right, with a long tail of characters who appeared in many comic book issues.
+# Draw various random samples of the data and show the applicability of the Central Limit Theorem for this variable. 
+I want to choose the "Appearances" variable, which represents the number of comic book issues in which the character appeared. I can visualize the distribution using a histogram:
+```{r echo = TRUE}
+n_samples <- 1000  # number of samples to draw
+sample_size <- 30  # sample size
+sample_means <- numeric(n_samples)  # empty vector to store sample means
+
+for (i in 1:n_samples) {
+  sample <- sample(avengers$Appearances, size=sample_size, replace=TRUE)
+  sample_means[i] <- mean(sample)
+}
+ggplot(data.frame(sample_means), aes(x=sample_means)) +
+  geom_histogram(binwidth=10) +
+  xlab("Sample Mean") +
+  ylab("Count")
+```
+I find that the distribution of the sample means is approximately normal, even though the original distribution of the "Appearances" variable was heavily skewed. This demonstrates the applicability of the Central Limit Theorem for this variable.
+# Show how various sampling methods can be used on your data. What are your conclusions if these samples are used instead of the whole dataset. 
+```{r echo = TRUE}
+# Simple random sample
+set.seed(100)
+srs <- avengers %>% sample_n(50)
+# Stratified random sample
+stratified <- avengers %>% group_by(Gender) %>% 
+              sample_n(size = 10) %>% ungroup()
+# Cluster sample
+cluster <- avengers %>% slice(1:10)
+# Systematic sample
+systematic <- avengers[c(1, 11, 21, 31, 41, 51, 61, 71, 81, 91, 101, 111, 121),]
+# Convenience sample
+convenience <- avengers %>% filter(Appearances >= 100)
+srs
+stratified
+cluster
+systematic
+convenience
+```
+
+I have demonstrated five different sampling methods: simple random sampling, stratified random sampling, cluster sampling, systematic sampling, and convenience sampling.
+
+A simple random sample involves selecting a random subset of the observations from the population. In this case, I have randomly selected 50 characters from the "Avengers" data-set. The representativeness of this sample depends on whether it is truly random and whether it adequately captures the variation in the original dataset.
+
+Stratified random sampling involves dividing the population into subgroups (strata) and selecting a random sample from each subgroup. In this case, I have stratified the data-set by the "Gender" variable and selected 10 characters from each subgroup. This can be a useful sampling method if there are important subgroups in the population that need to be represented in the sample.
+
+Cluster sampling involves dividing the population into clusters and selecting a random sample of clusters to include in the study. In this case, I have selected the first 10 characters in the dataset as a cluster sample. This can be a useful sampling method if the population is geographically or otherwise clustered.
+
+Systematic sampling involves selecting every nth observation from the population. In this case, I have selected every 10th character from the "Avengers" data-set. This can be a useful sampling method if the population is ordered in some way (e.g., alphabetically).
+
+Convenience sampling involves selecting the most readily available observations. In this case, I have selected all characters with 100 or more comic book appearances. This is generally not a representative sampling method, as it is subject to bias based on what is convenient to the researcher.
+
+In conclusion, the choice of sampling method depends on the research question and the characteristics of the population. While some sampling methods can be useful for certain types of populations or research questions, others can introduce bias or inadequately capture the variation in the population. It is important to carefully consider the sampling method and its potential limitations before drawing conclusions based on a sample.
+## Use Data wrangling techniques for the appropriate analysis of your data.
+```{r echo = TRUE}
+avengers_filtered <- avengers %>% filter(!is.na(Gender))
+
+# summarize number of Avengers by gender
+avengers_summary <- avengers_filtered %>% group_by(Gender) %>% summarise(count = n())
+
+# view the summary data
+avengers_summary
+
+```
+# Use plotly for your plots for interactivity
+```{r echo = TRUE}
+# explore the data set
+glimpse(avengers)
+
+# create an interactive scatter plot of the number of appearances by year
+avengers %>%
+  group_by(Year) %>%
+  summarise(appearances = n()) %>%
+  plot_ly(x = ~Year, y = ~appearances, type = "scatter", mode = "markers") %>%
+  add_markers(color = ~appearances, colorscale = "Viridis", size = 5) %>%
+  layout(xaxis = list(title = "Year"), yaxis = list(title = "Number of Appearances"))
+
+
+```
+# Conclucsion
+In this project, I explored different statistical techniques for analyzing the "Avengers" dataset. I started by examining the distribution of a numerical variable, which allowed us to understand the central tendency and spread of the data. I then demonstrated the applicability of the Central Limit Theorem by drawing various random samples from the dataset and showing that the mean of these samples tends to be normally distributed around the population mean, regardless of the distribution of the population.
+
+Next, I investigated various sampling methods that can be used on the "Avengers" dataset, including simple random sampling, stratified random sampling, cluster sampling, systematic sampling, and convenience sampling. I found that different sampling methods can have varying degrees of representativeness and bias, depending on the structure and characteristics of the dataset. Therefore, it is important to carefully consider the sampling method used in any analysis to ensure the validity and generalizability of the results.
+
+In conclusion, this project demonstrated some of the key statistical concepts and techniques that can be used to analyze the "Avengers" dataset, which can be applied to other datasets as well. By using appropriate statistical methods, I can gain insights and make informed decisions based on data-driven evidence, ultimately improving our understanding of complex phenomena and informing effective strategies for action.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
